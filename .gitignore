@@ -1,0 +1,9 @@
+# C make files
+*.o
+tst
+
+# emacs autosave files
+*~
+
+# notes
+notes/
