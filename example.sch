@@ -6,15 +6,13 @@
 18:00 - Dinner
 20:00 - Sleep
 
-# [SUN,SAT]
-# try comma after simple scope can be read
-[SAT]
+[SUN,SAT]
 9:00 - wake up
 10:00 - Breakfast
 10:30 - Free time
 20:00 - sleep
 
-[APRIL]
+[APR]
 8:00 - wake up
 9:00 - morning walk
 10:00 - dance class
