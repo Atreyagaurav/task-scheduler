@@ -2,10 +2,10 @@ CC = gcc
 CFLAGS = -Wall
 LIBS = 
 PLUGFLAGS = 
-OBJ = tst.o
+OBJ = tst.o scope.o
 CONFIG =
 
-all: tst
+all: tst scope
 
 %.o: %.c $(DEPS)
 	$(CC) $(CFLAGS) $(LIBS) -c -o $@ $<
@@ -14,6 +14,9 @@ clean:
 	-rm *.o *.so tst
 
 tst: tst.o
+	gcc $(CFLAGS) -o $@ $^
+
+scope: scope.o
 	gcc $(CFLAGS) -o $@ $^
 
 install:
