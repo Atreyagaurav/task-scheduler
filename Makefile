@@ -2,25 +2,27 @@ CC = gcc
 CFLAGS = -Wall
 LIBS = 
 PLUGFLAGS = 
-OBJ = tst.o scope.o
+OBJ = task.o task_scope.o
 CONFIG =
 
-all: tst scope
+all: task task_scope
 
 %.o: %.c $(DEPS)
 	$(CC) $(CFLAGS) $(LIBS) -c -o $@ $<
 
 clean:
-	-rm *.o *.so tst
+	-rm *.o task
 
-tst: tst.o
+task: task.o
 	gcc $(CFLAGS) -o $@ $^
 
-scope: scope.o
+task_scope: task_scope.o
 	gcc $(CFLAGS) -o $@ $^
 
 install:
-	-sudo cp tst /usr/local/bin/
+	-sudo cp task /usr/local/bin/
+	-sudo cp task_scope /usr/local/bin/
 
 uninstall:
-	-sudo rm /usr/local/bin/tst
+	-sudo rm /usr/local/bin/task
+	-sudo rm /usr/local/bin/task_scope
