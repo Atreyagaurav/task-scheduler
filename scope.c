@@ -99,12 +99,12 @@ int main(int argc, char *argv[]) {
   time(&now);
   timeinfo = localtime(&now);
 
-  tk += add_day_token(timeinfo->tm_wday, tk);
-  *tk++ = ';';
-  tk += add_month_token(timeinfo->tm_wday, tk);
-  *tk++ = ';';
   tk += add_date_token(timeinfo->tm_year + 1900, timeinfo->tm_mon,
                        timeinfo->tm_mday, tk);
+  *tk++ = ',';
+  tk += add_day_token(timeinfo->tm_wday, tk);
+  *tk++ = ',';
+  tk += add_month_token(timeinfo->tm_wday, tk);
   printf("%s\n", output_token);
   return 0;
 }

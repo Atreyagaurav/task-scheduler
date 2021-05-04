@@ -164,8 +164,9 @@ char* scan_all_scopes(FILE *fp, int *len, int *width){
     *width = wd > *width ? wd : *width;
     *len += 1;
   }
+  *width += 1;
   /* storing the scopes in a char buffer */
-  char *scopes = malloc((*width+1) * *len * sizeof(char));
+  char *scopes = malloc(*width * *len * sizeof(char));
   fseek(fp, 0, SEEK_SET);
   ln = 0;
   while(nextScope(fp)){
@@ -179,30 +180,57 @@ char* scan_all_scopes(FILE *fp, int *len, int *width){
   return scopes;
 }
 
-void show_matched_scope(char *filename, char *scope){
+char* matched_scope(char *filename, char *scope){
   FILE *fp;
   fp = fopen(filename, "r");
-  int i, len, width;
-  char *sc;
+  int i, j, len, width, slen;
+  char *sc, *res;
+  res = malloc((width+1)*sizeof(char));
   char *scopes = scan_all_scopes(fp, &len, &width);
-  for(i=0; i<len; i++){
-    sc = (scopes + i * width);
-    if (match_scope(scope, sc)){
-      printf("%s\n", sc);
+  
+  slen = strlen(scope);
+  char *in_sco = malloc((slen+1)*sizeof(char));
+  int pos;
+  /* <=len to match the last null character of the token. */
+  for(i=0, pos=0; i <= slen; i++){
+    switch(*(scope+i)){
+    case ';':
+    case ',':
+    case '\0':
+      *(in_sco + pos) = '\0';
+      /* looping through the scopes in the file to get the correct scope. */
+      for (j = 0; j < len; j++) {
+        sc = (scopes + j * width);
+        if (match_scope(in_sco, sc)) {
+          strcpy(res, sc);
+	  free(scopes);
+	  fclose(fp);
+	  return res;
+        }
+      }
+      pos = 0;
       break;
+    default:
+      *(in_sco + pos++) = *(scope + i);
     }
   }
   free(scopes);
   fclose(fp);
+  strcpy(res, "DEFAULT");
+  return res;
 }
+
+
 
 /* MAIN function */
 
 int main(int argc, char *argv[])
 {
   struct options opt;
+  char *scope;
   opt = read_opts(argc, argv);
-  show_matched_scope(opt.config_file, opt.scope);
+  scope = matched_scope(opt.config_file, opt.scope);
+  printf("Match: %s\n", scope);
   return 0;
 }
 
