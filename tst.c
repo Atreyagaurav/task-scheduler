@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <time.h>
 
 #define COMMENT_CHAR '#'
 
@@ -11,6 +12,15 @@ struct options {
   char *config_file;
   char *out_file;
   char *scope;
+};
+
+struct task {
+  int st_hour;
+  int st_min;
+  int en_hour;
+  int en_min;
+  char summary[20];
+  char *des;
 };
 
 /* CLI helper functions */
@@ -134,6 +144,46 @@ int nextScope(FILE* fp){
   return 1;
 }
 
+/* time helper functions */
+
+void get_current_hm(int *h, int *m){
+  time_t now;
+  struct tm *timeinfo;
+  time(&now);
+  timeinfo = localtime(&now);
+  *h = timeinfo->tm_hour;
+  *m = timeinfo->tm_min;
+}
+
+int get_file_hm(FILE *fp, int *h, int *m){
+  char c;
+  *h=0, *m=0;
+  int flag=0;
+  while(flag<2){
+    c=fgetc(fp);
+    switch(c){
+    case ' ':
+    case '\t':
+      break;
+    case '0'...'9':
+      if (flag){
+	*m = *m * 10 + c - '0';
+      }else{
+	*h = *h * 10 + c - '0';
+      }
+      break;
+    case ':':
+    case '-':
+      if (flag)
+        return 1;
+      flag += 1;
+      break;
+    default:
+      return flag ? 1 : 0;
+    }
+  }
+  return 1;
+}
 /* scope matching functions */
 
 int match_scope(char *scope, char *target){
@@ -180,13 +230,12 @@ char* scan_all_scopes(FILE *fp, int *len, int *width){
   return scopes;
 }
 
-char* matched_scope(char *filename, char *scope){
-  FILE *fp;
-  fp = fopen(filename, "r");
+char* matched_scope(FILE *fp, char *scope, int *max_width){
   int i, j, len, width, slen;
   char *sc, *res;
-  res = malloc((width+1)*sizeof(char));
   char *scopes = scan_all_scopes(fp, &len, &width);
+  *max_width = width;
+  res = malloc(width*sizeof(char));
   
   slen = strlen(scope);
   char *in_sco = malloc((slen+1)*sizeof(char));
@@ -204,7 +253,6 @@ char* matched_scope(char *filename, char *scope){
         if (match_scope(in_sco, sc)) {
           strcpy(res, sc);
 	  free(scopes);
-	  fclose(fp);
 	  return res;
         }
       }
@@ -215,11 +263,73 @@ char* matched_scope(char *filename, char *scope){
     }
   }
   free(scopes);
-  fclose(fp);
   strcpy(res, "DEFAULT");
   return res;
 }
 
+struct task current_task(char *filename, char *scope){
+  struct task t1 = {};
+  FILE *fp;
+  int max_width;
+  fp = fopen(filename, "r");
+  scope = matched_scope(fp, scope, &max_width);
+  int h1, m1, h2, m2;
+  get_current_hm(&h1, &m1);
+  /* printf("TTIME: %d:%d\n", h1, m1); */
+
+  /* going through the scopes again */
+  fseek(fp, 0, SEEK_SET);
+  char *curr_scope = malloc(max_width * sizeof(char));
+  int i=0, flag=1;
+  char c;
+  char summar[25];
+  while(flag && nextScope(fp)){
+    while((c = fgetc(fp)) != ']'){
+      *(curr_scope + i++) = c;
+    }
+    *(curr_scope + i++) = '\0';
+    if(match_scope(scope, curr_scope)){
+      skipThisLine(fp);
+      while(nextLine(fp)){
+	if(!get_file_hm(fp, &h2, &m2)){
+	  t1.en_hour = 24;
+	  t1.en_min = 0;
+	  break;
+	}
+
+	/* printf(">%d:%d\n", h2, m2); */
+
+	if ((h2*60+m2)>(h1*60+m1)){
+	  /* means we went overbord */
+	  t1.en_hour = h2;
+	  t1.en_min = m2;
+	  break;
+	}
+	
+	/* copy the summary text to buffer. */
+        i = 0;
+	skipWhiteSpace(fp);
+        while ((c = fgetc(fp)) != '\n' && i < 25) {
+          summar[i++] = c;
+        }
+        summar[i] = '\0';
+        if (i > 18) {
+          summar[16] = '.';
+          summar[17] = '.';
+          summar[18] = '.';
+          summar[19] = '\0';
+        }
+        strcpy(t1.summary, summar);
+	t1.st_hour = h2;
+	t1.st_min = m2;
+      }
+    }
+    i = 0;
+  }
+  free(curr_scope);
+  fclose(fp);
+  return t1;
+}
 
 
 /* MAIN function */
@@ -227,10 +337,13 @@ char* matched_scope(char *filename, char *scope){
 int main(int argc, char *argv[])
 {
   struct options opt;
-  char *scope;
+  struct task tk;
   opt = read_opts(argc, argv);
-  scope = matched_scope(opt.config_file, opt.scope);
-  printf("Match: %s\n", scope);
+  tk = current_task(opt.config_file, opt.scope);
+  printf("%s (%02d:%02d-%02d:%02d)\n",
+	 tk.summary,
+	 tk.st_hour, tk.st_min,
+	 tk.en_hour, tk.en_min);
   return 0;
 }
 
