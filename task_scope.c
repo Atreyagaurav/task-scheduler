@@ -104,7 +104,7 @@ int main(int argc, char *argv[]) {
   *tk++ = ',';
   tk += add_day_token(timeinfo->tm_wday, tk);
   *tk++ = ',';
-  tk += add_month_token(timeinfo->tm_wday, tk);
+  tk += add_month_token(timeinfo->tm_mon, tk);
   printf("%s\n", output_token);
   return 0;
 }
