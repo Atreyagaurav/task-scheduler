@@ -346,10 +346,20 @@ int main(int argc, char *argv[])
   struct task tk;
   opt = read_opts(argc, argv);
   tk = current_task(opt.config_file, opt.scope);
-  printf("%s (%02d:%02d-%02d:%02d)\n",
+
+  FILE *fout;
+  if (opt.out_file){
+    fout = fopen(opt.out_file, "w");
+  }else{
+    fout = stdout;
+  }
+  fprintf(fout, "%s (%02d:%02d-%02d:%02d)\n",
 	 tk.summary,
 	 tk.st_hour, tk.st_min,
 	 tk.en_hour, tk.en_min);
+  if (opt.out_file){
+    fclose(fout);
+  }
   return 0;
 }
 
