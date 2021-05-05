@@ -1,10 +1,14 @@
 * Task Scheduler
 ** Current progress
-   Just done with the initial plannings.
+   Done with prototype I. Primary Objectives achieved.
+
+   Looks like creation of Daemon will be tough, I'll think about it later when I have free time. For now this works fine as long as I run it every 1 minute with conky instead of using a daemon.
+
+   I'm also conflicted whether to use libnotify to send notification directly or make user give the command to send notification.
 ** Objectives
 *** Primary Objectives
    - Read schedules from a text file
-   - Display current task (or write to file)
+   - Display current task (or write to a file)
 *** Secondary Objectives
    - Manage schedules (add/remove/modify)
    - Daemon to manage notifications on task change
@@ -20,7 +24,14 @@
    It's done so that it is simpler to program, nothing serious.
 
 ** Usage tips
+   
+*** Installation
+- Clone this repository with git command
+- Use the ~make~ command to compile the source code.
+- Use the ~make install~ command to install the package.
 *** Writing the schedule file
+   The schedule file is read from ~~/.config/task/task.sch~ location and if it doesn't exist then from ~/etc/task/task.sch~. You can also give it as a parameter with ~-c~ flag.
+    
    The scope can be anything from specific date to a weekday. you can also combine different scopes with comma.
 
    For example: ~SUN~, ~SUN,SAT~, ~JAN~, ~2021-JAN~, ~2021-JAN-1~ are all valid scopes.
@@ -30,11 +41,15 @@
 
 *** Using the executable
    You can use it to just see the current task, which is the task in the schedule which falls on today's scope and in current time.
-
+   
    You can combine it with some other tool to make it always display in your desktop or status bar (e.g. with conky)
 
+   Use the command ~task -h~ to look at the help menu.
+
+   You can pass a custom task file with ~-c~ option, and scope with ~-s~, you can use the scope generator with ~-s $(task_scope)~ to make it take scope from the ~task_scope~ executable which will create scope according to the current date. In ~date,weekday,month~ format.
+
    
-*** Using the daemon
+*** Using the daemon (TODO)
     Run the daemon as a background process. It'll automatically reload the schedule if the date changes (in midnight), or the schedule file is updated.
     The daemon can be configured to run a specific command to run when the task changes, or to update a specific file with the current task.
    

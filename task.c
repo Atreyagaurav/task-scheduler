@@ -44,6 +44,12 @@ char* get_config_filename(){
   ch = malloc(1024);
   strcpy(ch, getenv("HOME"));
   strcat(ch, "/.config/task/task.sch");
+  
+  if (access(ch, R_OK)){
+    /* runs when access fails.
+     * this means it'll priotize user config over system one. */
+    strcpy(ch, "/etc/task/task.sch");
+  }
   return ch;
 }
 
