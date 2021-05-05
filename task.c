@@ -315,7 +315,7 @@ struct task current_task(char *filename, char *scope){
 	/* copy the summary text to buffer. */
         i = 0;
 	skipWhiteSpace(fp);
-        while ((c = fgetc(fp)) != '\n' && i < 25) {
+        while ((c = fgetc(fp)) != '\n' && i < 24) {
           summar[i++] = c;
         }
         summar[i] = '\0';
