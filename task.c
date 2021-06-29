@@ -43,12 +43,12 @@ char* get_config_filename(){
   char *ch;
   ch = malloc(1024);
   strcpy(ch, getenv("HOME"));
-  strcat(ch, "/.config/task/task.sch");
+  strcat(ch, "/.config/task/task.conf");
   
   if (access(ch, R_OK)){
     /* runs when access fails.
      * this means it'll priotize user config over system one. */
-    strcpy(ch, "/etc/task/task.sch");
+    strcpy(ch, "/etc/task/task.conf");
   }
   return ch;
 }
@@ -180,6 +180,7 @@ int get_file_hm(FILE *fp, int *h, int *m){
       break;
     case ':':
     case '-':
+    case '=':
       if (flag)
         return 1;
       flag += 1;

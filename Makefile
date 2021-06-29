@@ -23,7 +23,7 @@ install:
 	-sudo cp task /usr/local/bin/
 	-sudo cp task_scope /usr/local/bin/
 	-sudo mkdir -p /etc/task
-	-sudo cp task.sch /etc/task
+	-sudo cp task.conf /etc/task
 
 uninstall:
 	-sudo rm /usr/local/bin/task
